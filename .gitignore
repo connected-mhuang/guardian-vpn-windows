@@ -73,9 +73,3 @@ wireguard.server.base64.config
 
 #vim
 *.swp
-
-#logger
-test/logger/packages
-
-#comment
-test/comment/node_modules
