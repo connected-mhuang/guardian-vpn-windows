@@ -124,9 +124,7 @@ namespace FirefoxPrivateNetwork.UI
 
             if (!string.IsNullOrEmpty(resource))
             {
-
-                sb = (this.FindResource(resource) as Storyboard).Clone();
-                Storyboard.SetTarget(sb, Viewer);
+                sb = this.FindResource(resource) as Storyboard;
                 sb.Completed += (sender, e) => { SlideCompleted(newView, slideDirection); };
                 sb.Begin();
 
@@ -217,22 +215,21 @@ namespace FirefoxPrivateNetwork.UI
             switch (slideDirection)
             {
                 case SlideDirection.Left:
-                    sb = (this.FindResource("slideScreenInFromRightAndShow") as Storyboard).Clone();
+                    sb = this.FindResource("slideScreenInFromRightAndShow") as Storyboard;
                     break;
                 case SlideDirection.Right:
-                    sb = (this.FindResource("slideScreenInFromLeftAndShow") as Storyboard).Clone();
+                    sb = this.FindResource("slideScreenInFromLeftAndShow") as Storyboard;
                     break;
                 case SlideDirection.Up:
-                    sb = (this.FindResource("slideScreenInFromBelowAndShow") as Storyboard).Clone();
+                    sb = this.FindResource("slideScreenInFromBelowAndShow") as Storyboard;
                     break;
                 case SlideDirection.Down:
-                    sb = (this.FindResource("slideScreenInFromAboveAndShow") as Storyboard).Clone();
+                    sb = this.FindResource("slideScreenInFromAboveAndShow") as Storyboard;
                     break;
                 default:
                     break;
             }
 
-            Storyboard.SetTarget(sb, Viewer);
             sb.Begin();
         }
     }

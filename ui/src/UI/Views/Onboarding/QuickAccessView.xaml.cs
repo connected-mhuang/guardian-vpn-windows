@@ -1,4 +1,4 @@
-﻿// <copyright file="OnboardingView1.xaml.cs" company="Mozilla">
+﻿// <copyright file="QuickAccessView.xaml.cs" company="Mozilla">
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, you can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
 
@@ -20,35 +20,23 @@ using System.Windows.Shapes;
 namespace FirefoxPrivateNetwork.UI
 {
     /// <summary>
-    /// Interaction logic for OnboardingView1.xaml.
+    /// Interaction logic for QuickAccessView.xaml.
     /// </summary>
-    public partial class OnboardingView1 : UserControl
+    public partial class QuickAccessView : UserControl
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="OnboardingView1"/> class.
+        /// Initializes a new instance of the <see cref="QuickAccessView"/> class.
         /// </summary>
-        public OnboardingView1()
+        public QuickAccessView()
         {
             DataContext = Manager.MainWindowViewModel;
             InitializeComponent();
         }
 
-        private void NavigateOnboarding2(object sender, RoutedEventArgs e)
+        private void NavigateQuickAccess(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.NavigateToView(new OnboardingView2(), MainWindow.SlideDirection.Left);
-        }
-
-        private void ExitOnboarding(object sender, RoutedEventArgs e)
-        {
-            MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.NavigateToView(new LandingView(), MainWindow.SlideDirection.Down);
-        }
-
-        private void Skip_Click(object sender, RoutedEventArgs e)
-        {
-            var fxaLoginThread = new FxA.Login();
-            fxaLoginThread.StartLogin();
+            mainWindow.NavigateToView(new MainView(), MainWindow.SlideDirection.Left);
         }
     }
 }
