@@ -18,7 +18,6 @@ namespace FirefoxPrivateNetwork.WireGuard
     internal class Broker
     {
         private const int ChildProcessTimeoutSeconds = 5;
-        private static Process brokerProcess;
 
         private IntPtr masterReadPipe = IntPtr.Zero;
         private IntPtr masterWritePipe = IntPtr.Zero;
@@ -37,7 +36,7 @@ namespace FirefoxPrivateNetwork.WireGuard
         /// <returns>True on success.</returns>
         public static bool UACShellExecute(string program, string arguments)
         {
-            brokerProcess = new Process()
+            var process = new Process()
             {
                 StartInfo =
                 {
@@ -49,7 +48,7 @@ namespace FirefoxPrivateNetwork.WireGuard
                 },
             };
 
-            return brokerProcess.Start();
+            return process.Start();
         }
 
         /// <summary>
@@ -346,18 +345,6 @@ namespace FirefoxPrivateNetwork.WireGuard
         public void ClearHeartbeat()
         {
             lastReceivedHeartBeat = DateTime.MinValue;
-        }
-
-        /// <summary>
-        /// Shut down the broker.
-        /// </summary>
-        public void ShutDown()
-        {
-            if (brokerProcess != null)
-            {
-                brokerProcess.Kill();
-                brokerProcess.WaitForExit();
-            }
         }
 
         /// <summary>

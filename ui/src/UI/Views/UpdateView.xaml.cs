@@ -41,22 +41,10 @@ namespace FirefoxPrivateNetwork.UI
 
             var updateTask = Task.Run(async () =>
             {
-                var updateResult = await Update.Update.Run(ProductConstants.GetNumericVersion());
-
-                switch (updateResult)
+                var success = await Update.Update.Run(ProductConstants.GetNumericVersion());
+                if (!success)
                 {
-                    case Update.Update.UpdateResult.DisconnectTimeout:
-                    case Update.Update.UpdateResult.GeneralFailure:
-                    case Update.Update.UpdateResult.HttpError:
-                    case Update.Update.UpdateResult.InvalidSignature:
-                    case Update.Update.UpdateResult.SuccessNoUpdate:
-                    case Update.Update.UpdateResult.RunFailure:
-                        ErrorHandling.ErrorHandler.Handle(new ErrorHandling.UserFacingMessage("update-update-failed"), ErrorHandling.UserFacingErrorType.Toast, ErrorHandling.UserFacingSeverity.ShowError, ErrorHandling.LogLevel.Error);
-                        break;
-
-                    case Update.Update.UpdateResult.Georestricted:
-                        ErrorHandling.ErrorHandler.Handle(new ErrorHandling.UserFacingMessage("update-update-failed-georestricted"), ErrorHandling.UserFacingErrorType.Toast, ErrorHandling.UserFacingSeverity.ShowError, ErrorHandling.LogLevel.Error);
-                        break;
+                    ErrorHandling.ErrorHandler.Handle(new ErrorHandling.UserFacingMessage("update-update-failed"), ErrorHandling.UserFacingErrorType.Toast, ErrorHandling.UserFacingSeverity.ShowError, ErrorHandling.LogLevel.Error);
                 }
 
                 Application.Current.Dispatcher.Invoke(() =>
