@@ -191,6 +191,9 @@ workflows:
   workflow:
     jobs:
       - build
+      - smoke-test:
+          requires:
+            - build
   smoke-test:
     triggers:
       - schedule:
