@@ -5,7 +5,6 @@
 namespace FirefoxPrivateVPNUITest
 {
     using System;
-    using System.Threading;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using OpenQA.Selenium;
     using OpenQA.Selenium.Appium.Windows;
@@ -76,17 +75,8 @@ namespace FirefoxPrivateVPNUITest
             if (this.Session != null)
             {
                 this.Session.Quit();
-                DesiredCapabilities appCapabilities = new DesiredCapabilities();
-                appCapabilities.SetCapability("app", "Root");
-                var desktopSession = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
-                var notification = desktopSession.FindElementByName("Notification Chevron");
-                notification.Click();
-                var clientTray = desktopSession.FindElementByName("Firefox Private Network VPN - Disconnected");
-                desktopSession.Mouse.ContextClick(clientTray.Coordinates);
-                var exitItem = desktopSession.FindElementByName("E_xit");
-                exitItem.Click();
-                notification.Click();
-                desktopSession.Quit();
+                var desktopSession = new DesktopSession();
+                desktopSession.CloseVPNClient();
                 this.Session = null;
             }
         }
