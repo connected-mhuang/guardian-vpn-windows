@@ -29,7 +29,7 @@ namespace FirefoxPrivateVPNUITest.Screens
             this.titleElement = vpnSession.FindElementByClassName("HeroText");
             this.subtitleElement = vpnSession.FindElementByClassName("HeroSubText");
             this.settingButton = vpnSession.FindElementByName("Settings");
-            this.vpnSwitch = vpnSession.FindElementByName("Toggle VPN");
+            this.vpnSwitch = vpnSession.FindElementByName("Toggle");
             this.serverListButton = vpnSession.FindElementByAccessibilityId("ConnectionNavButton");
             this.deviceListButton = vpnSession.FindElementByName("My devices");
             this.vpnStatus = vpnSession.FindElementByName("VPN status");

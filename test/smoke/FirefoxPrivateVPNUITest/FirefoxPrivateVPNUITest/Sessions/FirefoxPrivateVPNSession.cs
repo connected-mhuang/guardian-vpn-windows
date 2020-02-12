@@ -90,7 +90,6 @@ namespace FirefoxPrivateVPNUITest
                     }
 
                     Thread.Sleep(TimeSpan.FromSeconds(2));
-                    mainScreen.ClickSettingsButton();
                     UserCommonOperation.UserSignOut(this);
                 }
 

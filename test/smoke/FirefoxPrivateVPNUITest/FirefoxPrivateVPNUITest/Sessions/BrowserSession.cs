@@ -91,8 +91,15 @@ namespace FirefoxPrivateVPNUITest
             if (this.Session != null)
             {
                 this.Session.Close();
-                WindowsElement closeButton = this.Session.FindElementByName("Close Tabs");
-                closeButton.Click();
+                try
+                {
+                    WindowsElement closeButton = this.Session.FindElementByName("Close Tabs");
+                    closeButton.Click();
+                }
+                catch (InvalidOperationException)
+                {
+                }
+
                 this.Session.Quit();
                 this.Session = null;
             }

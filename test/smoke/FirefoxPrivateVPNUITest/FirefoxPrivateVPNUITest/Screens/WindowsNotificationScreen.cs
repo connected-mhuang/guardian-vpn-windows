@@ -5,6 +5,7 @@
 namespace FirefoxPrivateVPNUITest.Screens
 {
     using System;
+    using System.Threading;
     using OpenQA.Selenium.Appium;
     using OpenQA.Selenium.Appium.Windows;
 
@@ -33,12 +34,13 @@ namespace FirefoxPrivateVPNUITest.Screens
             catch (Exception)
             {
                 desktopSession.FindElementByName("Action Center").Click();
+                Thread.Sleep(TimeSpan.FromSeconds(1));
                 var actionCenterWindow = desktopSession.FindElementByName("Action center");
                 var notification = actionCenterWindow.FindElementByName("Notifications from Firefox Private Network VPN");
                 var latestNotification = notification.FindElementByClassName("ListViewItem");
                 this.titleText = latestNotification.FindElementByAccessibilityId("Title");
                 this.messageText = latestNotification.FindElementByAccessibilityId("Content");
-                this.dismissButton = notification.FindElementByAccessibilityId("DismissButton");
+                this.dismissButton = latestNotification.FindElementByAccessibilityId("DismissButton");
             }
         }
 
