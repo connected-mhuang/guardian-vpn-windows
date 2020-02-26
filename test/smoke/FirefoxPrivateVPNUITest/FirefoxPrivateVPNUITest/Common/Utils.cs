@@ -5,13 +5,12 @@
 namespace FirefoxPrivateVPNUITest
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading;
-    using FirefoxPrivateVPNUITest.Screens;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using RestSharp;
 
     /// <summary>
     /// Here are some utilities.
@@ -30,6 +29,52 @@ namespace FirefoxPrivateVPNUITest
             var rand = new Random();
             int index = rand.Next(0, result.Count());
             return result.ElementAt(index);
+        }
+
+        /// <summary>
+        /// Remove all space, tab, new line character from multiline string.
+        /// </summary>
+        /// <param name="text">A string text.</param>
+        /// <returns>A new string text.</returns>
+        public static string CleanText(string text)
+        {
+            return Regex.Replace(text, @"[\r\n\t\s]+", string.Empty);
+        }
+
+        /// <summary>
+        /// Wait until the file exists.
+        /// </summary>
+        /// <param name="path">The path to the file.</param>
+        /// <param name="timeOut">The timeout.</param>
+        /// <returns>File exists or not.</returns>
+        public static bool WaitUntilFileExist(string path, double timeOut = 10000)
+        {
+            Stopwatch time = new Stopwatch();
+            time.Start();
+            bool retry = true;
+            bool exist = false;
+            while (retry && time.ElapsedMilliseconds <= timeOut)
+            {
+                exist = File.Exists(path);
+                if (exist)
+                {
+                    retry = false;
+                    time.Stop();
+                }
+                else
+                {
+                    retry = true;
+                    Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                }
+            }
+
+            if (time.ElapsedMilliseconds > timeOut && !exist)
+            {
+                time.Stop();
+            }
+
+            time.Reset();
+            return exist;
         }
     }
 }

@@ -5,7 +5,6 @@
 namespace FirefoxPrivateVPNUITest
 {
     using System;
-    using System.Threading;
     using FirefoxPrivateVPNUITest.Screens;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using OpenQA.Selenium;
@@ -32,6 +31,7 @@ namespace FirefoxPrivateVPNUITest
                 DesiredCapabilities appCapabilities = new DesiredCapabilities();
                 appCapabilities.SetCapability("app", FirefoxPrivateVPNAppId);
                 appCapabilities.SetCapability("deviceName", "WindowsPC");
+
                 try
                 {
                     this.Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);

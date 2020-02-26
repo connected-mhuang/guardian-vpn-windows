@@ -4,8 +4,6 @@
 
 namespace FirefoxPrivateVPNUITest.Screens
 {
-    using System;
-    using System.Threading;
     using OpenQA.Selenium.Appium;
     using OpenQA.Selenium.Appium.Windows;
 
@@ -29,7 +27,7 @@ namespace FirefoxPrivateVPNUITest.Screens
         /// <param name="vpnSession">VPN session.</param>
         public DeviceScreen(WindowsDriver<WindowsElement> vpnSession)
         {
-            var deviceView = vpnSession.FindElementByClassName("DevicesView");
+            var deviceView = vpnSession.WaitUntilFindElement(vpnSession.FindElementByClassName, "DevicesView");
             this.backButton = deviceView.FindElementByName("Back");
             var textBlocks = deviceView.FindElementsByClassName("TextBlock");
             this.title = textBlocks[0];

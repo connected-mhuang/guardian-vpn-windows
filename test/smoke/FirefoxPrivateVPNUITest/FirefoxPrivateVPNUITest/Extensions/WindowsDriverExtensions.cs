@@ -8,9 +8,7 @@ namespace FirefoxPrivateVPNUITest
     using System.Diagnostics;
     using System.Threading;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using OpenQA.Selenium;
     using OpenQA.Selenium.Appium.Windows;
-    using OpenQA.Selenium.Support.UI;
 
     /// <summary>
     /// Here are some extensions for Windows Driver.
@@ -31,8 +29,10 @@ namespace FirefoxPrivateVPNUITest
             time.Start();
             bool retry = true;
             WindowsElement element = null;
+            int count = 0;
             while (retry && time.ElapsedMilliseconds <= timeOut)
             {
+                Console.WriteLine($"Try to fetch element with {findMethod.Method.Name} - {selector}: {++count}");
                 try
                 {
                     element = findMethod(selector);

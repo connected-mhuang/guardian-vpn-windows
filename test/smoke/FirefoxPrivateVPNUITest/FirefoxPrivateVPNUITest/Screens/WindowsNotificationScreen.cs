@@ -5,8 +5,6 @@
 namespace FirefoxPrivateVPNUITest.Screens
 {
     using System;
-    using System.Threading;
-    using OpenQA.Selenium;
     using OpenQA.Selenium.Appium;
     using OpenQA.Selenium.Appium.Windows;
 

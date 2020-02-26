@@ -5,8 +5,8 @@
 namespace FirefoxPrivateVPNUITest
 {
     using System;
+    using System.Diagnostics;
     using System.Net;
-    using System.Threading;
     using FirefoxPrivateVPNUITest.Screens;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Polly;
@@ -22,7 +22,8 @@ namespace FirefoxPrivateVPNUITest
         /// </summary>
         /// <param name="vpnClient">VPN session.</param>
         /// <param name="browser">Browser session.</param>
-        public static void UserSignIn(FirefoxPrivateVPNSession vpnClient, BrowserSession browser)
+        /// <param name="disposeBrowser">Whether to dispose the browser after login.</param>
+        public static void UserSignIn(FirefoxPrivateVPNSession vpnClient, BrowserSession browser, bool disposeBrowser = true)
         {
             // Verify Account Screen
             vpnClient.Session.SwitchTo();
@@ -42,7 +43,10 @@ namespace FirefoxPrivateVPNUITest
             PasswordInputPage passwordInputPage = new PasswordInputPage(browser.Session);
             passwordInputPage.InputPassword(Environment.GetEnvironmentVariable("EXISTED_USER_PASSWORD"));
             passwordInputPage.ClickSignInButton();
-            browser.Dispose();
+            if (disposeBrowser)
+            {
+                browser.Dispose();
+            }
 
             // Quick Access Screen
             vpnClient.Session.SwitchTo();
@@ -64,6 +68,7 @@ namespace FirefoxPrivateVPNUITest
             mainScreen.ClickSettingsButton();
             SettingScreen settingScreen = new SettingScreen(vpnClient.Session);
             Assert.AreEqual("Settings", settingScreen.GetTitle());
+            settingScreen.ScrollDown();
             settingScreen.ClickSignOutButton();
         }
 
@@ -71,34 +76,45 @@ namespace FirefoxPrivateVPNUITest
         /// Send API request to check whether user is connected or not.
         /// </summary>
         /// <returns>The API response.</returns>
-        public static IRestResponse AmIMullvad()
+        /// <param name="expectedContent">Expected content returned from API.</param>
+        public static IRestResponse AmIMullvad(string expectedContent = null)
         {
             var client = new RestClient("https://am.i.mullvad.net/connected");
             var request = new RestRequest(Method.GET);
-            request.AddHeader("cache-control", "no-cache");
-            request.AddHeader("Connection", "keep-alive");
-            request.AddHeader("Accept-Encoding", "gzip, deflate");
-            request.AddHeader("Host", "am.i.mullvad.net");
-            request.AddHeader("Cache-Control", "no-cache");
-            request.AddHeader("Accept", "*/*");
-            return RetryExecute(client, request);
+            Func<IRestResponse, bool> condition = (res) =>
+            {
+                if (string.IsNullOrEmpty(expectedContent))
+                {
+                    return res.StatusCode != HttpStatusCode.OK;
+                }
+
+                return res.StatusCode != HttpStatusCode.OK || !res.Content.Contains(expectedContent);
+            };
+            IRestResponse response = RetryExecute(client, request, condition);
+            return response;
         }
 
         /// <summary>
         /// Call Mullvad API to get current city.
         /// </summary>
         /// <returns>The API response.</returns>
-        public static IRestResponse GetCityViaMullvad()
+        /// <param name="expectedCity">Expected city returned from API.</param>
+        public static IRestResponse GetCityViaMullvad(string expectedCity = null)
         {
             var client = new RestClient("https://am.i.mullvad.net/city");
             var request = new RestRequest(Method.GET);
-            request.AddHeader("cache-control", "no-cache");
-            request.AddHeader("Connection", "keep-alive");
-            request.AddHeader("Accept-Encoding", "gzip, deflate");
-            request.AddHeader("Host", "am.i.mullvad.net");
-            request.AddHeader("Cache-Control", "no-cache");
-            request.AddHeader("Accept", "*/*");
-            return RetryExecute(client, request);
+            Func<IRestResponse, bool> condition = (res) =>
+            {
+                if (string.IsNullOrEmpty(expectedCity))
+                {
+                    return res.StatusCode != HttpStatusCode.OK;
+                }
+
+                return res.StatusCode != HttpStatusCode.OK || !expectedCity.Contains(res.Content.Trim());
+            };
+            IRestResponse response = RetryExecute(client, request, condition);
+            Console.WriteLine($"Mullvad API city response: {response.Content}");
+            return response;
         }
 
         /// <summary>
@@ -108,14 +124,13 @@ namespace FirefoxPrivateVPNUITest
         /// <param name="desktop">Desktop session.</param>
         public static void ConnectVPN(FirefoxPrivateVPNSession vpnClient, DesktopSession desktop)
         {
-            // Verify user is not connected to Mullvad VPN
-            IRestResponse response = AmIMullvad();
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.IsTrue(response.Content.Contains("You are not connected to Mullvad"));
-
             // Click VPN switch toggle and turn on VPN
             vpnClient.Session.SwitchTo();
             MainScreen mainScreen = new MainScreen(vpnClient.Session);
+            Assert.AreEqual("VPN is off", mainScreen.GetTitle());
+            Assert.AreEqual("Turn it on to protect your entire device", mainScreen.GetSubtitle());
+            Assert.IsTrue(mainScreen.GetOffImage().Displayed);
+            Assert.IsFalse(mainScreen.GetOnImage().Displayed);
             mainScreen.ToggleVPNSwitch();
 
             // Verify the windows notification
@@ -124,16 +139,18 @@ namespace FirefoxPrivateVPNUITest
             Assert.AreEqual("You're secure and protected.", windowsNotificationScreen.GetMessageText());
             windowsNotificationScreen.ClickDismissButton();
 
+            // Verify user is connected to Mullvad VPN
+            IRestResponse response = AmIMullvad("You are connected to Mullvad");
+            Console.WriteLine($"After connection - Mullvad connected API response: {response.Content}");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.IsTrue(response.Content.Contains("You are connected to Mullvad"));
+
+            // Verify the changes on main screen
             vpnClient.Session.SwitchTo();
             Assert.IsTrue(mainScreen.GetOnImage().Displayed);
             Assert.IsFalse(mainScreen.GetOffImage().Displayed);
             Assert.AreEqual("VPN is on", mainScreen.GetTitle());
             Assert.IsTrue(mainScreen.GetSubtitle().Contains("Secure and protected"));
-
-            // Verify user is connected to Mullvad VPN
-            response = AmIMullvad();
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.IsTrue(response.Content.Contains("You are connected to Mullvad"));
         }
 
         /// <summary>
@@ -143,11 +160,6 @@ namespace FirefoxPrivateVPNUITest
         /// <param name="desktop">Desktop session.</param>
         public static void DisconnectVPN(FirefoxPrivateVPNSession vpnClient, DesktopSession desktop)
         {
-            // Verify user is already connected to VPN
-            IRestResponse response = AmIMullvad();
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.IsTrue(response.Content.Contains("You are connected to Mullvad"));
-
             // Click VPN switch toggle and turn off VPN
             vpnClient.Session.SwitchTo();
             MainScreen mainScreen = new MainScreen(vpnClient.Session);
@@ -167,7 +179,8 @@ namespace FirefoxPrivateVPNUITest
             Assert.AreEqual("Turn it on to protect your entire device", mainScreen.GetSubtitle());
 
             // Verify user disconnected to Mullvad VPN
-            response = AmIMullvad();
+            IRestResponse response = AmIMullvad("You are not connected to Mullvad");
+            Console.WriteLine($"After disconnection - Mullvad connected API response: {response.Content}");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             Assert.IsTrue(response.Content.Contains("You are not connected to Mullvad"));
         }
@@ -178,21 +191,25 @@ namespace FirefoxPrivateVPNUITest
         /// <param name="client">RestClient object.</param>
         /// <param name="request">RestRequest object.</param>
         /// <returns>The API response.</returns>
-        private static IRestResponse RetryExecute(IRestClient client, IRestRequest request)
+        private static IRestResponse RetryExecute(IRestClient client, IRestRequest request, Func<IRestResponse, bool> condition)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            int retries = 0;
+
             // Define retry policy
-            var policy = Policy.HandleResult<IRestResponse>((response) =>
-            {
-                return response.StatusCode != HttpStatusCode.OK;
-            }).WaitAndRetry(3, (count) => TimeSpan.FromSeconds(10));
+            var policy = Policy.HandleResult(condition).WaitAndRetry(5, (count) => TimeSpan.FromSeconds(10));
 
             // Execute the request with policy
             var val = policy.ExecuteAndCapture(() =>
             {
-                return client.Execute(request);
+                Console.WriteLine($"{client.BaseUrl} - sent times: {++retries}");
+                var response = client.Execute(request);
+                Console.WriteLine($"Response: {response.StatusCode} {response.Content}");
+                return response;
             });
-            IRestResponse rr = val.Result;
 
+            IRestResponse rr = val.Result;
             if (rr == null)
             {
                 rr = new RestResponse();
@@ -200,6 +217,8 @@ namespace FirefoxPrivateVPNUITest
                 rr.ErrorException = val.FinalException;
             }
 
+            stopwatch.Stop();
+            Console.WriteLine($"The total time to get the expected response: {stopwatch.ElapsedMilliseconds} milliseconds.");
             return rr;
         }
     }
