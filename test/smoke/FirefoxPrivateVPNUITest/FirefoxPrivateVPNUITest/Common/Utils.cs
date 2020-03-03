@@ -163,6 +163,45 @@ namespace FirefoxPrivateVPNUITest
         }
 
         /// <summary>
+        /// Get verification code from email subject.
+        /// </summary>
+        /// <param name="user">The email user name.</param>
+        /// <returns>The verification code.</returns>
+        public static string GetVerificationCode(string user)
+        {
+            var client = new RestClient($"{Constants.RestMailAPI}/{user}");
+            client.Timeout = -1;
+            var request = new RestRequest(Method.GET);
+            Func<IRestResponse, bool> condition = (res) =>
+            {
+                return res.StatusCode != HttpStatusCode.OK || res.Content == "[]";
+            };
+            IRestResponse response = RetryExecute(client, request, condition);
+            dynamic json = Newtonsoft.Json.Linq.JArray.Parse(response.Content);
+            string subject = Convert.ToString(json[0].subject);
+            string verificationCode = subject.Split(':')[1].Trim();
+            return verificationCode;
+        }
+
+        /// <summary>
+        /// Delete user from rest mail.
+        /// </summary>
+        /// <param name="user">The email user name.</param>
+        /// <returns>Succeed or not.</returns>
+        public static bool DeleteUserFromRestMail(string user)
+        {
+            var client = new RestClient($"{Constants.RestMailAPI}/{user}");
+            client.Timeout = -1;
+            var request = new RestRequest(Method.DELETE);
+            Func<IRestResponse, bool> condition = (res) =>
+            {
+                return res.StatusCode != HttpStatusCode.OK;
+            };
+            IRestResponse response = RetryExecute(client, request, condition);
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+
+        /// <summary>
         /// Execute the request with retry policy.
         /// </summary>
         /// <param name="client">RestClient object.</param>

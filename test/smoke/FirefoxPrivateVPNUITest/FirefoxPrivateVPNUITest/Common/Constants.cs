@@ -69,5 +69,20 @@ Do you wish to proceed?";
         /// Am I mullvad city API.
         /// </summary>
         public static readonly string AmIMullvadCityAPI = "https://am.i.mullvad.net/city";
+
+        /// <summary>
+        /// Rest mail API.
+        /// </summary>
+        public static readonly string RestMailAPI = "https://restmail.net/mail";
+
+        /// <summary>
+        /// New user name.
+        /// </summary>
+        public static readonly string NewUserName = "connected";
+
+        /// <summary>
+        /// New user email.
+        /// </summary>
+        public static readonly string NewUserEmail = $"{NewUserName}@restmail.net";
     }
 }

@@ -4,6 +4,7 @@
 
 namespace FirefoxPrivateVPNUITest
 {
+    using System;
     using FirefoxPrivateVPNUITest.Screens;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,7 +12,6 @@ namespace FirefoxPrivateVPNUITest
     /// This Sign In test is for new users.
     /// </summary>
     [TestClass]
-    [Ignore]
     public class NewUserSignInTest
     {
         private FirefoxPrivateVPNSession vpnClient;
@@ -53,21 +53,60 @@ namespace FirefoxPrivateVPNUITest
             LandingScreen landingScreen = new LandingScreen(this.vpnClient.Session);
             landingScreen.ClickGetStartedButton();
 
+            // Verify Account Screen
+            this.vpnClient.Session.SwitchTo();
+            VerifyAccountScreen verifyAccountScreen = new VerifyAccountScreen(this.vpnClient.Session);
+            Assert.AreEqual("Waiting for sign in and subscription confirmation...", verifyAccountScreen.GetTitle());
+            Assert.AreEqual("Cancel and try again", verifyAccountScreen.GetCancelTryAgainButtonText());
+
             // Switch to Browser session
             this.browser.Session.SwitchTo();
-            EmailInputPage loginScreen = new EmailInputPage(this.browser.Session);
-            loginScreen.InputEmail("mhuang+123456@connected.io");
-            loginScreen.ClickContinueButton();
+
+            // Email Input page
+            EmailInputPage emailInputPage = new EmailInputPage(this.browser.Session);
+            emailInputPage.InputEmail(Constants.NewUserEmail);
+            emailInputPage.ClickContinueButton();
+
+            // Registration password Input Page
             RegisterPage registerPage = new RegisterPage(this.browser.Session);
-            registerPage.InputPassword("Passw0rd!");
-            registerPage.InputRepeatPassword("Passw0rd!");
-            registerPage.InputAge("30");
+            registerPage.InputPassword(Environment.GetEnvironmentVariable("EXISTED_USER_PASSWORD"));
+            registerPage.InputRepeatPassword(Environment.GetEnvironmentVariable("EXISTED_USER_PASSWORD"));
+            registerPage.InputAge("50");
             registerPage.ClickCreateAccountButton();
 
-            // TODO: need to insert a predicatable verification code
-            // TODO: set up subscription payment
-            // TODO: switch back to VPN client and click continue
-            // TODO: Sign out
+            // Get verification code from API
+            string verificationCode = Utils.GetVerificationCode(Constants.NewUserName);
+
+            // Enter verification code page
+            VerificationCodePage verificationCodePage = new VerificationCodePage(this.browser.Session);
+            verificationCodePage.InputVerificationCode(verificationCode);
+            verificationCodePage.ClickVerifyButton();
+
+            // Enter subscription page
+            SubscriptionPage subscriptionPage = new SubscriptionPage(this.browser.Session);
+            subscriptionPage.InputFullName(Constants.NewUserName);
+            subscriptionPage.InputCardNumber(Environment.GetEnvironmentVariable("NEW_USER_CARD_NUMBER"));
+            subscriptionPage.InputExpDate(Environment.GetEnvironmentVariable("NEW_USER_CARD_EXP_DATE"));
+            subscriptionPage.InputCVC(Environment.GetEnvironmentVariable("NEW_USER_CARD_CVC"));
+            subscriptionPage.InputZipCode(Environment.GetEnvironmentVariable("NEW_USER_ZIP_CODE"));
+            subscriptionPage.ClickAuthorizeCheckBox();
+            subscriptionPage.ClickSubmitButton();
+
+            // Subscription Success Page
+            SubscriptionSuccessPage subscriptionSuccessPage = new SubscriptionSuccessPage(this.browser.Session);
+            subscriptionSuccessPage.ClickTakeMeToProductLink();
+
+            // Quick Access Screen
+            this.vpnClient.Session.SwitchTo();
+            QuickAccessScreen quickAccessScreen = new QuickAccessScreen(this.vpnClient.Session);
+            Assert.AreEqual("Quick access", quickAccessScreen.GetTitle());
+            Assert.AreEqual("You can quickly access Firefox Private Network from your taskbar tray", quickAccessScreen.GetSubTitle());
+            Assert.AreEqual("Located next to the clock at the bottom right of your screen", quickAccessScreen.GetDescription());
+            quickAccessScreen.ClickContinueButton();
+
+            // TODO: before signout we need to delete the account from fxa
+            // User sign out
+            UserCommonOperation.UserSignOut(this.vpnClient);
         }
     }
 }
