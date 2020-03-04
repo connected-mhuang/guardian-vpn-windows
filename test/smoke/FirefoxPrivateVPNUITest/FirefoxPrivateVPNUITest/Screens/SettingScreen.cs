@@ -49,7 +49,7 @@ namespace FirefoxPrivateVPNUITest.Screens
             this.signOutButton = vpnSession.FindElementByName("Sign out");
             this.scrollDownButton = vpnSession.FindElementByAccessibilityId("PART_LineDownButton");
             this.profileImage = vpnSession.FindElementByAccessibilityId("ProfileImageButton");
-            this.userName = vpnSession.FindElementByName(Environment.GetEnvironmentVariable("EXISTED_USER_NAME"));
+            this.userName = vpnSession.FindElementByClassName("ScrollViewer").FindElementsByClassName("TextBlock")[1];
             this.manageAccountButton = vpnSession.FindElementByName("Manage account");
             this.allowAccessCheckbox = vpnSession.FindElementByAccessibilityId("AllowLocalDeviceAccessCheckBox");
             this.allowAccessDescription = vpnSession.FindElementByName("Access printers, streaming sticks and all other devices on your local network");

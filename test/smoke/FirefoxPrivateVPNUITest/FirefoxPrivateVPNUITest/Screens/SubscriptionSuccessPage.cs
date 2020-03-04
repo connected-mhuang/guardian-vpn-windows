@@ -4,6 +4,7 @@
 
 namespace FirefoxPrivateVPNUITest.Screens
 {
+    using System;
     using OpenQA.Selenium.Appium.Windows;
 
     /// <summary>
@@ -12,6 +13,7 @@ namespace FirefoxPrivateVPNUITest.Screens
     internal class SubscriptionSuccessPage
     {
         private WindowsElement takeMeToProductLink;
+        private WindowsDriver<WindowsElement> browserSession;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubscriptionSuccessPage"/> class.
@@ -19,6 +21,7 @@ namespace FirefoxPrivateVPNUITest.Screens
         /// <param name="browserSession">browser session.</param>
         public SubscriptionSuccessPage(WindowsDriver<WindowsElement> browserSession)
         {
+            this.browserSession = browserSession;
             this.takeMeToProductLink = browserSession.FindElementByName("No thanks, just take me to my product.");
         }
 
@@ -27,7 +30,14 @@ namespace FirefoxPrivateVPNUITest.Screens
         /// </summary>
         public void ClickTakeMeToProductLink()
         {
-            this.takeMeToProductLink.Click();
+            try
+            {
+                this.takeMeToProductLink.Click();
+            }
+            catch (Exception)
+            {
+                this.browserSession.FindElementByName("No thanks, just take me to my product.").Click();
+            }
         }
     }
 }

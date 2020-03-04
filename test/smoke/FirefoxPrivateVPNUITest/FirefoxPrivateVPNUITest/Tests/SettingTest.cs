@@ -74,7 +74,7 @@ namespace FirefoxPrivateVPNUITest
             landingScreen.ClickGetStartedButton();
 
             // User Sign In via web browser
-            UserCommonOperation.UserSignIn(this.vpnClient, this.browser, false);
+            UserCommonOperation.UserSignIn(this.vpnClient, this.browser);
 
             // Main Screen
             this.vpnClient.Session.SwitchTo();

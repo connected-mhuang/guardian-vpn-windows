@@ -51,7 +51,7 @@ namespace FirefoxPrivateVPNUITest
         /// <param name="path">The path to the file.</param>
         /// <param name="timeOut">The timeout.</param>
         /// <returns>File exists or not.</returns>
-        public static bool WaitUntilFileExist(string path, double timeOut = 10000)
+        public static bool WaitUntilFileExist(string path, double timeOut = 20000)
         {
             bool exist = false;
             WaitUntil(ref exist, File.Exists, path, (ex) => ex, timeOut);
@@ -65,7 +65,7 @@ namespace FirefoxPrivateVPNUITest
         /// <param name="selector">The selector used in the findMethod.</param>
         /// <param name="timeOut">Time out in milliseconds. Default is 10000 milliseconds.</param>
         /// <returns>Windows element.</returns>
-        public static WindowsElement WaitUntilFindElement(Func<string, WindowsElement> findMethod, string selector, double timeOut = 10000)
+        public static WindowsElement WaitUntilFindElement(Func<string, WindowsElement> findMethod, string selector, double timeOut = 20000)
         {
             WindowsElement element = null;
             Utils.WaitUntil(ref element, findMethod, selector, (ele) => ele != null, timeOut);
@@ -81,16 +81,19 @@ namespace FirefoxPrivateVPNUITest
         /// <param name="param">The parameter passed to func.</param>
         /// <param name="condition">A function which takes result as parameter and return bool.</param>
         /// <param name="timeOut">The time out, default 10000 ms.</param>
-        public static void WaitUntil<T>(ref T result, Func<string, T> func, string param, Func<T, bool> condition, double timeOut = 10000)
+        public static void WaitUntil<T>(ref T result, Func<string, T> func, string param, Func<T, bool> condition, double timeOut = 20000)
         {
             Stopwatch time = new Stopwatch();
             time.Start();
             bool retry = true;
+            int count = 0;
             while (retry && time.ElapsedMilliseconds <= timeOut)
             {
                 try
                 {
+                    Console.WriteLine($"Wait for {func.Method.Name} with {param}: {++count}");
                     result = func(param);
+
                     if (condition(result))
                     {
                         retry = false;
@@ -99,13 +102,14 @@ namespace FirefoxPrivateVPNUITest
                     else
                     {
                         retry = true;
-                        Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                        Thread.Sleep(TimeSpan.FromMilliseconds(200));
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"Error message for {func.Method.Name} with {param}: {ex.Message}");
                     retry = true;
-                    Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                    Thread.Sleep(TimeSpan.FromMilliseconds(200));
                 }
             }
 
@@ -114,6 +118,7 @@ namespace FirefoxPrivateVPNUITest
                 time.Stop();
             }
 
+            Console.WriteLine($"Total waiting time for {func.Method.Name} with {param}: {time.ElapsedMilliseconds} milliseconds.");
             time.Reset();
         }
 

@@ -92,6 +92,7 @@
     <Compile Include="Screens\LogWindow.cs" />
     <Compile Include="Screens\MainScreen.cs" />
     <Compile Include="Screens\LastOnboardingScreen.cs" />
+    <Compile Include="Screens\ManageAccountPage.cs" />
     <Compile Include="Screens\NotificationsScreen.cs" />
     <Compile Include="Screens\OnboardingScreen.cs" />
     <Compile Include="Screens\PasswordInputPage.cs" />

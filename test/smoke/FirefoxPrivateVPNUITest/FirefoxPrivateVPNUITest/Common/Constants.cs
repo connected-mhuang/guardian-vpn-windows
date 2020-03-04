@@ -78,7 +78,7 @@ Do you wish to proceed?";
         /// <summary>
         /// New user name.
         /// </summary>
-        public static readonly string NewUserName = "connected";
+        public static readonly string NewUserName = $"automation-{Environment.GetEnvironmentVariable("BUILD_NUMBER")}";
 
         /// <summary>
         /// New user email.

@@ -30,6 +30,9 @@ namespace FirefoxPrivateVPNUITest
             var vpnClientPosition = this.vpnClient.Session.Manage().Window.Position;
             var vpnClientSize = this.vpnClient.Session.Manage().Window.Size;
             this.browser.SetWindowPosition(vpnClientPosition.X + vpnClientSize.Width, 0);
+
+            // Delete email from restmail.net
+            Assert.IsTrue(Utils.DeleteUserFromRestMail(Constants.NewUserName));
         }
 
         /// <summary>
@@ -104,9 +107,34 @@ namespace FirefoxPrivateVPNUITest
             Assert.AreEqual("Located next to the clock at the bottom right of your screen", quickAccessScreen.GetDescription());
             quickAccessScreen.ClickContinueButton();
 
-            // TODO: before signout we need to delete the account from fxa
+            // On main screen
+            MainScreen main = new MainScreen(this.vpnClient.Session);
+            main.ClickSettingsButton();
+
+            // On setting screen
+            SettingScreen settingScreen = new SettingScreen(this.vpnClient.Session);
+            settingScreen.ClickManageAccountButton();
+
+            // Open an account page in browser
+            this.browser.Session.SwitchTo();
+            emailInputPage = new EmailInputPage(this.browser.Session);
+            emailInputPage.InputEmail(Constants.NewUserEmail);
+            emailInputPage.ClickContinueButton();
+
+            // Go to password input page
+            PasswordInputPage passwordInputPage = new PasswordInputPage(this.browser.Session);
+            passwordInputPage.InputPassword(Environment.GetEnvironmentVariable("EXISTED_USER_PASSWORD"));
+            passwordInputPage.ClickSignInButton();
+
+            // Go to account management page
+            ManageAccountPage manageAccountPage = new ManageAccountPage(this.browser.Session);
+            manageAccountPage.ClickDeleteButton();
+            manageAccountPage.ConfirmDeleteAccount(Environment.GetEnvironmentVariable("EXISTED_USER_PASSWORD"));
+
             // User sign out
-            UserCommonOperation.UserSignOut(this.vpnClient);
+            this.vpnClient.Session.SwitchTo();
+            settingScreen.ScrollDown();
+            settingScreen.ClickSignOutButton();
         }
     }
 }
